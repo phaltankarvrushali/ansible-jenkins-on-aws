@@ -1,0 +1,8 @@
+---
+- name: Setup Jenkins
+  hosts: "jenkins"
+  remote_user: ubuntu
+  become: true
+  roles:
+    - variables
+    - setup_jenkins

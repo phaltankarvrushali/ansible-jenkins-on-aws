@@ -1,0 +1,82 @@
+---
+- name: Get the VPC Info
+  ec2_vpc_net_info:
+    profile: "{{ variables.profile }}"
+    region: "{{ variables.aws_region }}"
+    filters:
+      "tag:Name": "{{ variables.vpc_name }}"
+  register: vpc_net_info
+
+- name: Set variables
+  set_fact:
+    jenkins_vpc_id: "{{ vpc_net_info.vpcs[0].vpc_id }}"
+
+- name: EC2 Facts
+  ec2_instance_facts:
+    region: "{{ variables.aws_region }}"
+    filters:
+      "tag:Name": "jenkinsec2"
+    profile: "{{ variables.profile }}"
+  register: ec2
+
+- name: Kill EC2 Instance
+  ec2:
+    instance_ids: "{{ item.instance_id }}"
+    state: absent
+    wait: yes
+    region: "{{ variables.aws_region }}"
+  with_items: "{{ ec2.instances }}"
+
+- name: Grab the route tables
+  ec2_vpc_route_table_info:
+    profile: "{{ variables.profile }}"
+    region: "{{ variables.aws_region }}"
+    filters:
+      vpc-id: "{{ jenkins_vpc_id }}"
+  register: jenkins_route_table_info
+
+
+- name: Delete Internet Gateway
+  community.aws.ec2_vpc_igw:
+    vpc_id: "{{ jenkins_vpc_id }}"
+    state: absent
+
+- name: Remove subnet
+  amazon.aws.ec2_vpc_subnet:
+    state: absent
+    vpc_id: "{{ jenkins_vpc_id }}"
+    cidr: "{{ item.value.cidr }}"
+  with_dict: "{{ variables.vpc_subnets }}"
+
+# - name: Delete the route table in the vpc
+#   ec2_vpc_route_table:
+#     state: absent
+#     lookup: id
+#     route_table_id: "{{ jenkins_route_table_info.route_tables[0].id }}"
+#     vpc_id: "{{ jenkins_vpc_id }}"
+#     profile: "{{ variables.profile }}"
+#     region: "{{ variables.aws_region }}"
+
+
+- name: Get security group info
+  ec2_group_info:
+    filters:
+      vpc-id: "{{ jenkins_vpc_id }}"
+  register: security_group_info
+
+- name: "Delete Security Group"
+  amazon.aws.ec2_group:
+    region: "{{ variables.aws_region }}"
+    group_id: "{{ item.group_id }}"
+    state: absent
+  when: item.group_name != 'default'
+  with_items: "{{ security_group_info.security_groups }}"
+
+
+- name: Delete VPC for Jenkins
+  ec2_vpc_net:
+    state: absent
+    region: "{{ variables.aws_region }}"
+    name: "{{ variables.vpc_name }}"
+    cidr_block: "{{ variables.cidr_block }}"
+    profile: "{{ variables.profile }}"

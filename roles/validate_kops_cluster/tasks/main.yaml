@@ -1,0 +1,6 @@
+---
+- name: Validate the cluster
+  shell: |
+    kops validate cluster \
+      --name={{ variables.cluster_domain }} \
+      --state={{ variables.s3_path }}

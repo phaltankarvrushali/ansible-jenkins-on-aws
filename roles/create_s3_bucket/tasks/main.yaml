@@ -1,0 +1,7 @@
+#### Setup s3 bucket for kops on AWS ####
+- name: Create s3 bucket
+  amazon.aws.s3_bucket:
+    name: "{{ variables.s3_bucket_name }}"
+    state: present
+    encryption: "AES256"
+    versioning: yes

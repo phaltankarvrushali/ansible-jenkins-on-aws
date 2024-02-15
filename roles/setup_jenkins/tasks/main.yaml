@@ -1,0 +1,19 @@
+# - name: jenkins container
+#   docker: 
+#     name: jenkins instance
+#     image: jenkins
+#     state: present
+---
+# - name: pull jenkins container
+#   community.docker.docker_container: 
+#     name: jenkins
+#     image: "jenkins:2.60.3"
+#     state: present
+
+- name: Start jenkins container
+  community.docker.docker_container:
+    name: jenkins
+    image: "jenkins:2.60.3"
+    state: started
+    ports:
+     - "8080:8080"

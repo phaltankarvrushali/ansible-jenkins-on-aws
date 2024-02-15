@@ -1,0 +1,6 @@
+---
+- name: Delete AWS Networking
+  hosts: localhost
+  roles:
+    - variables
+    - teardown_infra

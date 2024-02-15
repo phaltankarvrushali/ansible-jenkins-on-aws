@@ -1,0 +1,6 @@
+#### Deleting the Cluster on AWS ####
+- name: Teardown the cluster
+  shell: |
+    kops delete cluster \
+    --name={{ variables.cluster_domain }} \
+    --state={{ variables.s3_path }} --yes

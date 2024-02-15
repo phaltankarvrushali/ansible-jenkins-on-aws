@@ -1,0 +1,16 @@
+---
+#### Creating the Cluster on AWS ####
+- name: Create the cluster
+  shell: |
+    kops create cluster {{ variables.cluster_domain }} \
+    --ssh-public-key {{ variables.bastion_key_path }} \
+    --node-count {{ variables.worker_node_count }} \
+    --zones {{ variables.cluster_regions }} \
+    --node-size {{ variables.cluster_node_size }} \
+    --master-size {{ variables.cluster_master_size }} \
+    --master-zones {{ variables.cluster_regions }} \
+    --networking cilium \
+    --topology private \
+    --bastion="true" \
+    --state={{ variables.s3_path }} \
+    --yes

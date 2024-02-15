@@ -1,0 +1,8 @@
+---
+- name: Setup AWS Cluster with kops
+  hosts: localhost
+  roles:
+    - variables
+    - create_s3_bucket
+    - setup_aws_cluster
+    - validate_kops_cluster
